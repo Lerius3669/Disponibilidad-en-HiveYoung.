@@ -86,35 +86,45 @@
 
       const respuesta = {
         nombre,
-        disponibilidad: []
-      };
+        disponibles: [],
+        no_disponibles: []
+};
 
       document.querySelectorAll('.month').forEach((monthDiv, i) => {
         const monthInfo = months[i];
         const dias = Array.from(monthDiv.querySelectorAll('.day'));
 
         dias.forEach((d, idx) => {
-          if (d.classList.contains('available')) {
-            const diaNumero = idx + 1;
-            respuesta.disponibilidad.push({
-              fecha: `${diaNumero.toString().padStart(2,'0')}-${(monthInfo.monthIndex+1).toString().padStart(2,'0')}-${monthInfo.year}`,
-              estado: "Disponible"
-            });
-          }
-        });
+  const diaNumero = idx + 1;
+  const fecha = `${diaNumero.toString().padStart(2,'0')}-${(monthInfo.monthIndex+1).toString().padStart(2,'0')}-${monthInfo.year}`;
+
+  if (d.classList.contains('available')) {
+    respuesta.disponibles.push(fecha);
+  } else if (d.classList.contains('unavailable')) {
+    respuesta.no_disponibles.push(fecha);
+  }
+});
       });
 
-      const texto = 
+      const texto =
 `Nombre: ${respuesta.nombre}
+
 Días disponibles:
-${respuesta.disponibilidad.length === 0 
+${respuesta.disponibles.length === 0
   ? "Ningún día marcado."
-  : respuesta.disponibilidad.map(d => `- ${d.fecha}`).join("\\n")}`;
+  : respuesta.disponibles.map(f => "- " + f).join("\n")}
+
+Días NO disponibles:
+${respuesta.no_disponibles.length === 0
+  ? "Ningún día marcado."
+  : respuesta.no_disponibles.map(f => "- " + f).join("\n")}`;
+
 
       document.getElementById('output').textContent = texto;
     });
   </script>
 </body>
 </html>
+
 
 
