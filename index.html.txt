@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendario de Disponibilidad</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f6f6f6; }
+    h1 { text-align: center; }
+    .calendar-container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+    .month { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .month h2 { text-align: center; margin-bottom: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(7, 40px); gap: 5px; }
+    .day { width: 40px; height: 40px; background: #e9e9e9; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; user-select: none; }
+    .day.available { background: #4caf50; color: white; }
+    .day.unavailable { background: #e53935; color: white; }
+    .legend { margin-top: 10px; font-size: 14px; }
+    #export, #download { margin-top: 10px; padding: 10px 15px; cursor: pointer; }
+    #controls { max-width: 600px; margin: 20px auto; text-align: center; }
+    input[type="text"] { padding: 8px; width: 60%; max-width: 300px; }
+    #output { text-align: left; max-width: 800px; margin: 20px auto; white-space: pre-wrap; background: #222; color: #eee; padding: 10px; border-radius: 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Calendario de Disponibilidad</h1>
+  <div id="controls">
+    <p>1) Escribe tu nombre y marca los días que tienes <b>disponibles</b> (verde).  
+    2) Luego haz clic en <b>“Exportar respuesta”</b> y envía el texto al organizador.</p>
+    <input id="nombre" type="text" placeholder="Tu nombre completo" />
+    <br><br>
+    <button id="export">Exportar respuesta</button>
+  </div>
+
+  <div class="calendar-container" id="calendar"></div>
+
+  <pre id="output"></pre>
+
+  <script>
+    const months = [
+      { name: "Diciembre 2025", year: 2025, monthIndex: 11, days: 31 }, // monthIndex 11 = diciembre
+      { name: "Enero 2026", year: 2026, monthIndex: 0, days: 31 }       // monthIndex 0 = enero
+    ];
+
+    const calendarContainer = document.getElementById('calendar');
+
+    // Crear calendario (sin lógica de días de la semana para simplificar)
+    months.forEach((m) => {
+      const monthDiv = document.createElement('div');
+      monthDiv.className = 'month';
+      monthDiv.innerHTML = `<h2>${m.name}</h2>`;
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+
+      for (let d = 1; d <= m.days; d++) {
+        const day = document.createElement('div');
+        day.className = 'day';
+        day.textContent = d;
+
+        day.addEventListener('click', () => {
+          if (day.classList.contains('available')) {
+            day.classList.remove('available');
+            day.classList.add('unavailable');
+          } else if (day.classList.contains('unavailable')) {
+            day.classList.remove('unavailable');
+          } else {
+            day.classList.add('available');
+          }
+        });
+
+        grid.appendChild(day);
+      }
+
+      monthDiv.appendChild(grid);
+      calendarContainer.appendChild(monthDiv);
+    });
+
+    document.getElementById('export').addEventListener('click', () => {
+      const nombre = document.getElementById('nombre').value.trim() || "Sin nombre";
+
+      const respuesta = {
+        nombre,
+        disponibilidad: []
+      };
+
+      document.querySelectorAll('.month').forEach((monthDiv, i) => {
+        const monthInfo = months[i];
+        const dias = Array.from(monthDiv.querySelectorAll('.day'));
+
+        dias.forEach((d, idx) => {
+          if (d.classList.contains('available')) {
+            const diaNumero = idx + 1;
+            respuesta.disponibilidad.push({
+              fecha: `${diaNumero.toString().padStart(2,'0')}-${(monthInfo.monthIndex+1).toString().padStart(2,'0')}-${monthInfo.year}`,
+              estado: "Disponible"
+            });
+          }
+        });
+      });
+
+      const texto = 
+`Nombre: ${respuesta.nombre}
+Días disponibles:
+${respuesta.disponibilidad.length === 0 
+  ? "Ningún día marcado."
+  : respuesta.disponibilidad.map(d => `- ${d.fecha}`).join("\\n")}`;
+
+      document.getElementById('output').textContent = texto;
+    });
+  </script>
+</body>
+</html>
